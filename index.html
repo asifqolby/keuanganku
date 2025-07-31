@@ -404,7 +404,12 @@
                                 <input type="number" id="income-amount" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="0">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Kategori</label>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
+                                    <button type="button" onclick="showCategoriesModal()" class="text-xs text-primary hover:text-primary/80 transition duration-200">
+                                        <i class="fas fa-cog mr-1"></i>Kelola Kategori
+                                    </button>
+                                </div>
                                 <select id="income-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                     <option value="Gaji">Gaji</option>
                                     <option value="Freelance">Freelance</option>
@@ -439,7 +444,12 @@
                                 <input type="number" id="expense-amount" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="0">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">Kategori</label>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
+                                    <button type="button" onclick="showCategoriesModal()" class="text-xs text-primary hover:text-primary/80 transition duration-200">
+                                        <i class="fas fa-cog mr-1"></i>Kelola Kategori
+                                    </button>
+                                </div>
                                 <select id="expense-category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                     <option value="Makanan">Makanan</option>
                                     <option value="Transportasi">Transportasi</option>
@@ -504,7 +514,12 @@
             <!-- Statistics Header -->
             <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200 mb-6">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">Statistik Keuangan</h2>
+                    <div class="flex items-center">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">Statistik Keuangan</h2>
+                        <button onclick="showStatsSettingsModal()" class="ml-4 text-sm text-primary hover:text-primary/80 transition duration-200">
+                            <i class="fas fa-cogs mr-1"></i>Atur Tampilan
+                        </button>
+                    </div>
                     <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                         <select id="stats-period" onchange="updateStatistics()" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                             <option value="daily">Harian</option>
@@ -1300,6 +1315,175 @@
                 <button onclick="hideNotification()" class="ml-2 text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times"></i>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Categories Modal -->
+    <div id="manage-categories-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 dark:bg-gray-800">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Kelola Kategori</h3>
+                <button onclick="hideCategoriesModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Income Categories -->
+                <div>
+                    <h4 class="text-md font-semibold text-gray-900 mb-3 dark:text-white">
+                        <i class="fas fa-plus-circle text-green-500 mr-2"></i>Kategori Pemasukan
+                    </h4>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="new-income-category" placeholder="Nama kategori baru..." class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <button onclick="addIncomeCategory()" class="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 transition duration-200">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="income-categories-list" class="space-y-2 max-h-64 overflow-y-auto">
+                        <!-- Categories will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Expense Categories -->
+                <div>
+                    <h4 class="text-md font-semibold text-gray-900 mb-3 dark:text-white">
+                        <i class="fas fa-minus-circle text-red-500 mr-2"></i>Kategori Pengeluaran
+                    </h4>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="new-expense-category" placeholder="Nama kategori baru..." class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <button onclick="addExpenseCategory()" class="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition duration-200">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="expense-categories-list" class="space-y-2 max-h-64 overflow-y-auto">
+                        <!-- Categories will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end mt-6">
+                <button onclick="hideCategoriesModal()" class="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-200">
+                    <i class="fas fa-check mr-2"></i>Selesai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Settings Modal -->
+    <div id="stats-settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 dark:bg-gray-800">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pengaturan Statistik</h3>
+                <button onclick="hideStatsSettingsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Key Metrics -->
+                <div class="space-y-3">
+                    <h4 class="text-md font-semibold text-gray-900 dark:text-white">Metrik Utama</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-total-balance" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Total Saldo</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-monthly-income" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Pemasukan Bulanan</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-monthly-expense" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Pengeluaran Bulanan</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-savings-ratio" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Rasio Tabungan</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="space-y-3">
+                    <h4 class="text-md font-semibold text-gray-900 dark:text-white">Grafik</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-income-expense-chart" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Trend Pemasukan vs Pengeluaran</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-balance-chart" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Trend Saldo</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-category-pie-chart" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Pengeluaran per Kategori</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-monthly-comparison-chart" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Perbandingan Bulanan</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-daily-activity-chart" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Aktivitas Harian</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Additional Components -->
+                <div class="space-y-3">
+                    <h4 class="text-md font-semibold text-gray-900 dark:text-white">Komponen Tambahan</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-top-categories" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Kategori Teratas</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-spending-patterns" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Pola Pengeluaran</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-goals-progress" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Progress Target</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-spending-heatmap" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Heatmap Pengeluaran</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-financial-health" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Skor Kesehatan Keuangan</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-monthly-forecast" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Prediksi Bulanan</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="show-financial-insights" class="text-primary focus:ring-primary" checked>
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Insight Keuangan</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-6">
+                <button onclick="resetStatsSettings()" class="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-200">
+                    <i class="fas fa-undo mr-2"></i>Reset ke Default
+                </button>
+                <div class="space-x-2">
+                    <button onclick="hideStatsSettingsModal()" class="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition duration-200">
+                        Batal
+                    </button>
+                    <button onclick="saveStatsSettings()" class="bg-primary text-white py-2 px-4 rounded-md hover:bg-primary/90 transition duration-200">
+                        <i class="fas fa-save mr-2"></i>Simpan Pengaturan
+                    </button>
+                </div>
             </div>
         </div>
     </div>

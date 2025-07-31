@@ -139,6 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
             updateDashboardAIStats();
             populateWalletDropdowns();
             
+            // Apply custom categories and statistics settings
+            updateCategorySelects();
+            applyStatisticsSettings();
+            
             console.log('All components updated successfully');
             
             // Final verification
@@ -6901,6 +6905,378 @@ function resetAllData() {
             setTimeout(() => {
                 location.reload();
             }, 1000);
+        }
+    }
+}
+
+// ===== CATEGORY MANAGEMENT FUNCTIONS =====
+
+function showCategoriesModal() {
+    document.getElementById('manage-categories-modal').classList.remove('hidden');
+    populateCategoriesModal();
+}
+
+function hideCategoriesModal() {
+    document.getElementById('manage-categories-modal').classList.add('hidden');
+}
+
+function populateCategoriesModal() {
+    const incomeList = document.getElementById('income-categories-list');
+    const expenseList = document.getElementById('expense-categories-list');
+    
+    // Populate income categories
+    incomeList.innerHTML = '';
+    customCategories.income.forEach((category, index) => {
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg';
+        categoryItem.innerHTML = `
+            <span class="text-sm text-gray-700 dark:text-gray-300">${category}</span>
+            <button onclick="removeIncomeCategory(${index})" class="text-red-500 hover:text-red-700 transition duration-200" ${category === 'Lainnya' ? 'disabled title="Kategori default tidak dapat dihapus"' : ''}>
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+        incomeList.appendChild(categoryItem);
+    });
+    
+    // Populate expense categories
+    expenseList.innerHTML = '';
+    customCategories.expense.forEach((category, index) => {
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg';
+        categoryItem.innerHTML = `
+            <span class="text-sm text-gray-700 dark:text-gray-300">${category}</span>
+            <button onclick="removeExpenseCategory(${index})" class="text-red-500 hover:text-red-700 transition duration-200" ${category === 'Lainnya' ? 'disabled title="Kategori default tidak dapat dihapus"' : ''}>
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+        expenseList.appendChild(categoryItem);
+    });
+    
+    // Add event listeners for Enter key
+    const incomeInput = document.getElementById('new-income-category');
+    const expenseInput = document.getElementById('new-expense-category');
+    
+    incomeInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addIncomeCategory();
+        }
+    });
+    
+    expenseInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addExpenseCategory();
+        }
+    });
+}
+
+function addIncomeCategory() {
+    const input = document.getElementById('new-income-category');
+    const categoryName = input.value.trim();
+    
+    if (!categoryName) {
+        showNotification('Nama kategori tidak boleh kosong!', 'error');
+        return;
+    }
+    
+    if (customCategories.income.includes(categoryName)) {
+        showNotification('Kategori sudah ada!', 'error');
+        return;
+    }
+    
+    // Add before "Lainnya"
+    const lainnyaIndex = customCategories.income.indexOf('Lainnya');
+    if (lainnyaIndex > -1) {
+        customCategories.income.splice(lainnyaIndex, 0, categoryName);
+    } else {
+        customCategories.income.push(categoryName);
+    }
+    
+    saveCategories();
+    updateCategorySelects();
+    populateCategoriesModal();
+    input.value = '';
+    
+    showNotification(`Kategori "${categoryName}" berhasil ditambahkan!`, 'success');
+}
+
+function addExpenseCategory() {
+    const input = document.getElementById('new-expense-category');
+    const categoryName = input.value.trim();
+    
+    if (!categoryName) {
+        showNotification('Nama kategori tidak boleh kosong!', 'error');
+        return;
+    }
+    
+    if (customCategories.expense.includes(categoryName)) {
+        showNotification('Kategori sudah ada!', 'error');
+        return;
+    }
+    
+    // Add before "Lainnya"
+    const lainnyaIndex = customCategories.expense.indexOf('Lainnya');
+    if (lainnyaIndex > -1) {
+        customCategories.expense.splice(lainnyaIndex, 0, categoryName);
+    } else {
+        customCategories.expense.push(categoryName);
+    }
+    
+    saveCategories();
+    updateCategorySelects();
+    populateCategoriesModal();
+    input.value = '';
+    
+    showNotification(`Kategori "${categoryName}" berhasil ditambahkan!`, 'success');
+}
+
+function removeIncomeCategory(index) {
+    const categoryName = customCategories.income[index];
+    
+    if (categoryName === 'Lainnya') {
+        showNotification('Kategori default tidak dapat dihapus!', 'error');
+        return;
+    }
+    
+    const confirmDelete = confirm(`Hapus kategori "${categoryName}"?\n\nTransaksi dengan kategori ini akan tetap ada.`);
+    if (confirmDelete) {
+        customCategories.income.splice(index, 1);
+        saveCategories();
+        updateCategorySelects();
+        populateCategoriesModal();
+        showNotification(`Kategori "${categoryName}" berhasil dihapus!`, 'success');
+    }
+}
+
+function removeExpenseCategory(index) {
+    const categoryName = customCategories.expense[index];
+    
+    if (categoryName === 'Lainnya') {
+        showNotification('Kategori default tidak dapat dihapus!', 'error');
+        return;
+    }
+    
+    const confirmDelete = confirm(`Hapus kategori "${categoryName}"?\n\nTransaksi dengan kategori ini akan tetap ada.`);
+    if (confirmDelete) {
+        customCategories.expense.splice(index, 1);
+        saveCategories();
+        updateCategorySelects();
+        populateCategoriesModal();
+        showNotification(`Kategori "${categoryName}" berhasil dihapus!`, 'success');
+    }
+}
+
+function updateCategorySelects() {
+    // Update income category select
+    const incomeSelect = document.getElementById('income-category');
+    if (incomeSelect) {
+        const currentValue = incomeSelect.value;
+        incomeSelect.innerHTML = '';
+        customCategories.income.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            incomeSelect.appendChild(option);
+        });
+        if (customCategories.income.includes(currentValue)) {
+            incomeSelect.value = currentValue;
+        }
+    }
+    
+    // Update expense category select
+    const expenseSelect = document.getElementById('expense-category');
+    if (expenseSelect) {
+        const currentValue = expenseSelect.value;
+        expenseSelect.innerHTML = '';
+        customCategories.expense.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            expenseSelect.appendChild(option);
+        });
+        if (customCategories.expense.includes(currentValue)) {
+            expenseSelect.value = currentValue;
+        }
+    }
+    
+    // Update filter category select
+    const filterSelect = document.getElementById('filter-category');
+    if (filterSelect) {
+        const currentValue = filterSelect.value;
+        filterSelect.innerHTML = '<option value="all">Semua Kategori</option>';
+        
+        // Add income categories
+        const incomeGroup = document.createElement('optgroup');
+        incomeGroup.label = 'Pemasukan';
+        customCategories.income.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            incomeGroup.appendChild(option);
+        });
+        filterSelect.appendChild(incomeGroup);
+        
+        // Add expense categories
+        const expenseGroup = document.createElement('optgroup');
+        expenseGroup.label = 'Pengeluaran';
+        customCategories.expense.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            expenseGroup.appendChild(option);
+        });
+        filterSelect.appendChild(expenseGroup);
+        
+        if (filterSelect.querySelector(`option[value="${currentValue}"]`)) {
+            filterSelect.value = currentValue;
+        }
+    }
+}
+
+function saveCategories() {
+    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(customCategories));
+}
+
+function loadCategories() {
+    const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
+    if (saved) {
+        try {
+            customCategories = JSON.parse(saved);
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    }
+}
+
+// ===== STATISTICS SETTINGS FUNCTIONS =====
+
+function showStatsSettingsModal() {
+    document.getElementById('stats-settings-modal').classList.remove('hidden');
+    populateStatsSettingsModal();
+}
+
+function hideStatsSettingsModal() {
+    document.getElementById('stats-settings-modal').classList.add('hidden');
+}
+
+function populateStatsSettingsModal() {
+    // Populate checkboxes based on current settings
+    document.getElementById('show-total-balance').checked = statisticsConfig.keyMetrics;
+    document.getElementById('show-monthly-income').checked = statisticsConfig.keyMetrics;
+    document.getElementById('show-monthly-expense').checked = statisticsConfig.keyMetrics;
+    document.getElementById('show-savings-ratio').checked = statisticsConfig.keyMetrics;
+    
+    document.getElementById('show-income-expense-chart').checked = statisticsConfig.incomeExpenseChart;
+    document.getElementById('show-balance-chart').checked = statisticsConfig.balanceChart;
+    document.getElementById('show-category-pie-chart').checked = statisticsConfig.categoryPieChart;
+    document.getElementById('show-monthly-comparison-chart').checked = statisticsConfig.monthlyComparisonChart;
+    document.getElementById('show-daily-activity-chart').checked = statisticsConfig.dailyActivityChart;
+    
+    document.getElementById('show-top-categories').checked = statisticsConfig.topCategories;
+    document.getElementById('show-spending-patterns').checked = statisticsConfig.spendingPatterns;
+    document.getElementById('show-goals-progress').checked = statisticsConfig.goalsProgress;
+    document.getElementById('show-spending-heatmap').checked = statisticsConfig.spendingHeatmap;
+    document.getElementById('show-financial-health').checked = statisticsConfig.financialHealth;
+    document.getElementById('show-monthly-forecast').checked = statisticsConfig.monthlyForecast;
+    document.getElementById('show-financial-insights').checked = statisticsConfig.financialInsights;
+}
+
+function saveStatsSettings() {
+    // Get checkbox values
+    const keyMetrics = document.getElementById('show-total-balance').checked ||
+                      document.getElementById('show-monthly-income').checked ||
+                      document.getElementById('show-monthly-expense').checked ||
+                      document.getElementById('show-savings-ratio').checked;
+    
+    statisticsConfig = {
+        keyMetrics: keyMetrics,
+        incomeExpenseChart: document.getElementById('show-income-expense-chart').checked,
+        balanceChart: document.getElementById('show-balance-chart').checked,
+        categoryPieChart: document.getElementById('show-category-pie-chart').checked,
+        monthlyComparisonChart: document.getElementById('show-monthly-comparison-chart').checked,
+        dailyActivityChart: document.getElementById('show-daily-activity-chart').checked,
+        topCategories: document.getElementById('show-top-categories').checked,
+        spendingPatterns: document.getElementById('show-spending-patterns').checked,
+        goalsProgress: document.getElementById('show-goals-progress').checked,
+        spendingHeatmap: document.getElementById('show-spending-heatmap').checked,
+        financialHealth: document.getElementById('show-financial-health').checked,
+        monthlyForecast: document.getElementById('show-monthly-forecast').checked,
+        financialInsights: document.getElementById('show-financial-insights').checked
+    };
+    
+    // Save to localStorage
+    localStorage.setItem(STORAGE_KEYS.STATISTICS_CONFIG, JSON.stringify(statisticsConfig));
+    
+    // Apply settings to current view
+    applyStatisticsSettings();
+    
+    hideStatsSettingsModal();
+    showNotification('Pengaturan statistik berhasil disimpan!', 'success');
+}
+
+function resetStatsSettings() {
+    const confirmReset = confirm('Reset pengaturan statistik ke default?');
+    if (confirmReset) {
+        statisticsConfig = {
+            keyMetrics: true,
+            incomeExpenseChart: true,
+            balanceChart: true,
+            categoryPieChart: true,
+            monthlyComparisonChart: true,
+            dailyActivityChart: true,
+            topCategories: true,
+            spendingPatterns: true,
+            goalsProgress: true,
+            spendingHeatmap: true,
+            financialHealth: true,
+            monthlyForecast: true,
+            financialInsights: true
+        };
+        
+        populateStatsSettingsModal();
+        showNotification('Pengaturan statistik berhasil direset!', 'success');
+    }
+}
+
+function applyStatisticsSettings() {
+    // Apply visibility settings to statistics components
+    const components = {
+        'key-metrics-container': statisticsConfig.keyMetrics,
+        'income-expense-chart-container': statisticsConfig.incomeExpenseChart,
+        'balance-chart-container': statisticsConfig.balanceChart,
+        'category-pie-chart-container': statisticsConfig.categoryPieChart,
+        'monthly-comparison-chart-container': statisticsConfig.monthlyComparisonChart,
+        'daily-activity-chart-container': statisticsConfig.dailyActivityChart,
+        'top-categories-container': statisticsConfig.topCategories,
+        'spending-patterns-container': statisticsConfig.spendingPatterns,
+        'goals-progress-container': statisticsConfig.goalsProgress,
+        'spending-heatmap-container': statisticsConfig.spendingHeatmap,
+        'financial-health-container': statisticsConfig.financialHealth,
+        'monthly-forecast-container': statisticsConfig.monthlyForecast,
+        'financial-insights-container': statisticsConfig.financialInsights
+    };
+    
+    Object.entries(components).forEach(([elementId, shouldShow]) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.style.display = shouldShow ? 'block' : 'none';
+        }
+    });
+    
+    // Update statistics if currently viewing
+    if (document.getElementById('statistics-section').style.display !== 'none') {
+        updateStatistics();
+    }
+}
+
+function loadStatisticsConfig() {
+    const saved = localStorage.getItem(STORAGE_KEYS.STATISTICS_CONFIG);
+    if (saved) {
+        try {
+            statisticsConfig = JSON.parse(saved);
+        } catch (error) {
+            console.error('Error loading statistics config:', error);
         }
     }
 }
